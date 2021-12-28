@@ -1,0 +1,10 @@
+title: simondotsh's infosec stuff
+baseurl: "/"
+url: "https://simondotsh.github.io"
+twitter_username: simondotsh
+github_username:  simondotsh
+
+# Build settings
+theme: minima
+plugins:
+  - jekyll-feed

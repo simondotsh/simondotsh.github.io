@@ -1,0 +1,31 @@
+---
+---
+
+@import "minima";
+
+figcaption {
+    padding-top: 2px;
+    text-align: center;
+    color: grey;
+}
+
+blockquote {
+    font-style: normal !important;
+}
+
+.site-footer2 {
+    border-top: 1px solid $grey-color-light;
+}
+
+.toc {
+    background-color: rgb(247, 247, 247);
+    border: 1px solid rgb(230, 230, 230);
+}
+
+.marg-top-25 {
+    margin-top: 25px;
+}
+
+.no-marg-bot {
+    margin-bottom: 0;
+}
