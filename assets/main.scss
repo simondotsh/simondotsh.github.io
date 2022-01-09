@@ -3,15 +3,17 @@
 
 @import "minima";
 
+blockquote {
+    font-style: normal !important;
+}
+
 figcaption {
     padding-top: 2px;
     text-align: center;
     color: grey;
 }
 
-blockquote {
-    font-style: normal !important;
-}
+h2, h3, h4, h5, h6 { font-weight: 600; }
 
 .site-footer2 {
     border-top: 1px solid $grey-color-light;
