@@ -69,7 +69,7 @@ The instantiation worked and our command was executed, which I confirmed by seei
 
 ## About Other Objects
 ### ShellWindows and ShellBrowserWindow
-These two built-in objects are also known to offer command execution capabilities. As the instantiated objects offer an interface to `Explorer.exe`, the command will be executed as the logged on user and therefore should be avoided, since a non-administrative will most-likely not be able to run commands as them.
+These two built-in objects are also known to offer command execution capabilities. As the instantiated objects offer an interface to `Explorer.exe`, the command will be executed as the logged on user and therefore should be avoided, since a non-administrative user will most-likely not be able to run commands as them.
 
 ### Custom Objects
 Keep in mind that other than the built-in objects, a user could have been given privileges over a custom object that may offer methods capable of code execution; however I am unaware of any decent way to investigate these without having local access on the host, which usually defeats the purpose of attempting to find a way to pivot on it.
