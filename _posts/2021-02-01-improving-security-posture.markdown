@@ -12,7 +12,7 @@ Often, it feels like the Groundhog Day when it comes to prioritization. Either t
 
 So, if I want to improve my organization’s security posture, what should I be working on and most importantly, what do I prioritize?
 
-## Exceptations
+## Expectations
 This article will address the question of structuring the initiatives of the so-called red, blue and purple teams, and may be seen as scoping into the technical aspects of information security. We will not be looking at the governance of establishing for instance security standards, risk analysis and acceptance, or a security software development life cycle.
 
 However, this does not mean that security governance teams should not be involved in any of this. In fact, they may be responsible for budgets or projects, depending on your organization’s structure, and be your greatest allies to communicate the needs to the upper management.
