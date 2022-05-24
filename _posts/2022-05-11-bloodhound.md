@@ -142,11 +142,11 @@ Throughout this example, we focused on a single direction to assess privileges (
 We can query all objects from `AD.LOCAL` that have direct privileges on `WORKSTATION.AD2.LOCAL` like so:
 
 ```
-MATCH (n {domainsid: '$DOMAIN_SID1'})-[*1..1]->(m {name: 'WORKSTATION.AD2.LOCAL'})
+MATCH (n {domainsid: '$DOMAIN_SID1'})-->(m {name: 'WORKSTATION.AD2.LOCAL'})
 RETURN n.name;
 ```
 
-Make sure to query for a one to one relationship (`[*1..1]`), since this avoids the case where objects with indirect privileges would be shown.
+Make sure to query for only one hop, since this avoids the case where objects with indirect privileges are shown.
 
 | n.name                   |
 | ------------------------ |
