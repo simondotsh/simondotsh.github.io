@@ -10,7 +10,7 @@ While its interface offers built-in Cypher queries, the full potential of the da
 
 ## Why Learning Cypher Is a Must
 Before we move on, one must be familiar with the jargon of graph theory in the context of BloodHound:
-* [A Node or object](https://bloodhound.readthedocs.io/en/latest/data-analysis/nodes.html) describes an Active Directory object, such as a `User`, `Computer` and `OU`.
+* [A node or object](https://bloodhound.readthedocs.io/en/latest/data-analysis/nodes.html) describes an Active Directory object, such as a `User`, `Computer` and `OU`.
 * [An edge or relationship](https://bloodhound.readthedocs.io/en/latest/data-analysis/edges.html) links two nodes together. A few examples include `MemberOf`, `GenericAll` and `Owns`.
 
 Now, consider the following case where an analyst wants to ensure that no path exists from one of the groups all users are part of, or a special identity that everyone has such as `Authenticated Users`. In our specifically-generated scenario, by setting `Authenticated Users` as the starting node and `Domain Admins` as the ending one, the interface claims that no path exists:
