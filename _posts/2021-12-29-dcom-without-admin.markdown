@@ -27,7 +27,9 @@ The following operations have been performed on a domain-joined Windows 10 host.
 ### Validating the Default Behavior
 To begin, impacket's [dcomexec.py](https://github.com/SecureAuthCorp/impacket/blob/master/examples/dcomexec.py) was used to achieve object instantiation remotely, providing credentials of a domain user having no particular privileges:
 
-`python3 dcomexec.py -object MMC20 -silentcommand -debug $DOMAIN/$USER:$PASSWORD\$@$HOST 'notepad.exe'`
+```
+python3 dcomexec.py -object MMC20 -silentcommand -debug $DOMAIN/$USER:$PASSWORD\$@$HOST 'notepad.exe'
+```
 
 * `-object MMC20` specifies that we wish to instantiate the `MMC20.Application` object.
 * `-silentcommand` executes the command without attempting to retrieve the output. This is desirable since the script is using an SMB share to write and fetch the output, and our low-privileged user cannot write to any.
