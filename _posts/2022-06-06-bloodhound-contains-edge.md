@@ -124,4 +124,4 @@ No path is returned due to the `Contains` edge getting deleted in the last secti
 ## Concluding
 While the proposed solution has negative aspects, it offers the peace of mind of knowing that the `Contains` edge will not introduce false positives. As I deem the fix imperfect, I will not be proposing it to the core of BloodHound, but recommend it to anyone assessing privileges at a large scale.
 
-I would like to thanks [marcan2020](https://twitter.com/marcan2020) for his contribution to the solution, and the [BadBlood](https://github.com/davidprowe/BadBlood) project for filling up my directories with plenty of data to play with.
+I would like to thank [marcan2020](https://twitter.com/marcan2020) for his contribution to the solution, and the [BadBlood](https://github.com/davidprowe/BadBlood) project for filling up my directories with plenty of data to play with.
