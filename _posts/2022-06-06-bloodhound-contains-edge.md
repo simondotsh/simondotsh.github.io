@@ -4,6 +4,8 @@ title:  "Beware of BloodHound's Contains Edge"
 date:   2022-06-14 00:00:00 -0500
 categories: infosec
 ---
+**2022-11-06:** Updated to take into account changes made into BloodHound 4.2.0.
+
 As I continue my way through assessing Active Directory privileges without commercial software, I am constantly reminded how complex of a task it is. While determining the objects a single user can control is quite straight forward, finding all paths leading to the compromise of privileged principals can be tricky on a large domain. It is also apparent that in order to successfully do so, one must possess a strong understanding of the analyzed data, especially its weaknesses, or be at risk of reporting erroneous findings.
 
 This post is dedicated to presenting the root cause of real-world scenario where if I did not take a close look at the data, I would have documented twice too many users with a path to domain administration privileges. It also includes a proposed solution so that you can also avoid it.
@@ -16,7 +18,7 @@ Consider the following path:
 
 <img src="/assets/img/bh-contains-edge/gpo-path-da.png" width="70%"/>
 
-The GPO `GPO ROOT@AD.LOCAL` is linked at the root of the domain, but is not enforced as denoted by the dotted `GpLink` edge. This signifies that if a domain or OU in the path blocks GPO inheritance, it will not go down to the object that we wish to compromise, which would also be shown in the graph with a dotted `Contains` edge. Note that this is an entirely different concept than ACE inheritance, and typically does not matter much due to the possibility to enforce the GPO, resulting in a complete disregard of any blocked inheritance. In this demonstration, it is safe to ignore the state of the link, but is worth understanding.
+The GPO `GPO ROOT@AD.LOCAL` is linked at the root of the domain, but is not enforced as denoted by the dotted `GPLink` edge. This signifies that if a domain or OU in the path blocks GPO inheritance, it will not go down to the object that we wish to compromise, which would also be shown in the graph with a dotted `Contains` edge. Note that this is an entirely different concept than ACE inheritance, and typically does not matter much due to the possibility to enforce the GPO, resulting in a complete disregard of any blocked inheritance. In this demonstration, it is safe to ignore the state of the link, but is worth understanding.
 
 Further down the path, the domain contains the well-known container `USERS@AD.LOCAL` that itself contains the group `DOMAIN ADMINS@AD.LOCAL`. Therefore, the `Contains` edges allow us to map that due to the GPO being linked at the root of the domain, it can use a filter that would apply to the members of the group that we want to compromise.
 
@@ -48,7 +50,7 @@ When importing the output of the collection method `DCOnly` into BloodHound, the
 Since the desired information cannot be found once imported, it means that the ingesting routine must be modified.
 
 ### Altering the Ingestor
-In the release version 4.1.0 of BloodHound, the file `src/js/newingestion.js` contains a node creation function for each type of objects located in the JSON files. Since all these objects have the property `isACLProtected` set in the collected data, we can simply update each function using the same principle that will be shown. As an example, only the `buildGroupJsonNew` function will be updated.
+In the release version 4.2.0 of BloodHound, the file `src/js/newingestion.js` contains a node creation function for each type of objects located in the JSON files. Since all these objects have the property `isACLProtected` set in the collected data, we can simply update each function using the same principle that will be shown. As an example, only the `buildGroupJsonNew` function will be updated.
 
 Before the `queries.properties.props.push` function call, add the following two lines:
 
@@ -64,17 +66,10 @@ The `if` comparison is used to avoid an odd behavior in the JSON where some obje
 All that is left is to compile the code. This can be achieved easily using the third-party Docker image [electronuserland/builder](https://hub.docker.com/r/electronuserland/builder) as such at the root of the edited BloodHound project:
 
 ```
-sudo docker run -it --rm -v ${PWD}:/project electronuserland/builder
+sudo docker run -it --rm -v ${PWD}:/project electronuserland/builder /bin/bash -c 'npm install && npm run-script build'
 ```
 
-Inside the container, run the following commands:
-
-```
-npm install
-npm run-script build
-```
-
-Once the compilation is complete, exit the container. On Linux, the newly created directory `BloodHound-linux-x64` contains the compiled binary. Execute it and import your data as normally done. Feel free to open up the developer console by using the keys `Ctrl+Shift+I` to find out if any errors were encountered during the import.
+Once the compilation is complete, the newly created directory `BloodHound-linux-x64` contains the compiled binary when using Linux. Execute it and import your data as normally done. Feel free to open up the developer console by using the keys `Ctrl+Shift+I` to find out if any errors were encountered during the import.
 
 At this point, nodes have the new `isaclprotected` property set, but relationships must also be adjusted to eliminate false positives.
 
@@ -86,9 +81,9 @@ Before executing any of the next queries, make sure to either backup your databa
 In `cypher-shell`, execute the following queries:
 
 ```
-MATCH (n:GPO)-[:GpLink|Contains*1..]->(m:User {isaclprotected: True}) CREATE (n)-[:DescendsTo]->(m);
-MATCH (n:GPO)-[:GpLink|Contains*1..]->(m:Group {isaclprotected: True}) CREATE (n)-[:DescendsTo]->(m);
-MATCH (n:GPO)-[:GpLink|Contains*1..]->(m:Computer {isaclprotected: True}) CREATE (n)-[:DescendsTo]->(m);
+MATCH (n:GPO)-[:GPLink|Contains*1..]->(m:User {isaclprotected: True}) CREATE (n)-[:DescendsTo]->(m);
+MATCH (n:GPO)-[:GPLink|Contains*1..]->(m:Group {isaclprotected: True}) CREATE (n)-[:DescendsTo]->(m);
+MATCH (n:GPO)-[:GPLink|Contains*1..]->(m:Computer {isaclprotected: True}) CREATE (n)-[:DescendsTo]->(m);
 ```
 
 The idea is to add a new edge, here named `DescendsTo`, to link GPOs to all objects they can apply to that have ACE inheritance disabled. In a large domain with some GPOs linked at the root of the domain, this may yield a significant amount of newly-added edges, but does not matter much in my experience.
@@ -110,7 +105,7 @@ After the previous manipulations, the GPO path described at the beginning of thi
 
 <img src="/assets/img/bh-contains-edge/descendsto-gpo-path-da.png" width="70%"/>
 
-1. We no longer see where the GPO is linked, and the path it has to take to compromise the user. This could be improved by adding a property to GPO objects depicting where they are linked, or simply query for its `GpLink` relationships. Then, we can use the distinguished name of the end object to reconstruct the path the GPO is taking.
+1. We no longer see where the GPO is linked, and the path it has to take to compromise the user. This could be improved by adding a property to GPO objects depicting where they are linked, or simply query for its `GPLink` relationships. Then, we can use the distinguished name of the end object to reconstruct the path the GPO is taking.
 2. Compromising a principal from a GPO is counted as only one relationship, and therefore risks of being reported more often when using the `shortestPath` function. Keep in mind that this problem is also true for many other cases, since all relationships have the same weight in the eyes of `shortestPath`. This leads to a chain of `MemberOf` costing more than a single `ForceChangePassword`, despite needing no operation on the domain to leverage the former.
 
 Regardless, in my situation, these downsides are significantly easier to deal with than attempting to manually filter out false positives.
@@ -120,6 +115,43 @@ As our last validation, we query for the false positive mentioned earlier:
 <img src="/assets/img/bh-contains-edge/resolved-false-positive-path-da.png" />
 
 No path is returned due to the `Contains` edge getting deleted in the last section, as `DOMAIN ADMINS@AD.LOCAL` has ACE inheritance disabled.
+
+## More Edge Removal
+In this section, we diverge from the `Contains` edge, but remain on the topic of false positive reduction. Depending on your use case, you may be perfectly fine with ignoring the following edges, but in my situation they were problematic.
+
+### The GetChanges Family
+Prior to version 4.2.0, a singular edge did not exist to identify a principal with `DCSync` privileges; the analyst had to query for both `GetChanges` and `GetChangesAll`. Now, the `DCSync` edge is created post-processing when the aforementioned privileges are identified. This is convenient, but the `GetChanges` and `GetChangesAll` edges are not deleted afterwards, meaning that you may retrieve a path where a principal only has one of them, inducing a false positive.
+
+The same concept applies to the new edge `SyncLAPSPassword` (technical details available [here](https://simondotsh.com/infosec/2022/07/11/dirsync.html)) combining `GetChanges` and `GetChangesInFilteredSet`.
+
+For this reason, during my analysis, I delete the `GetChanges*` edges:
+```
+MATCH ()-[r:GetChanges]->() DELETE r;
+MATCH ()-[r:GetChangesAll]->() DELETE r;
+MATCH ()-[r:GetChangesInFilteredSet]->() DELETE r;
+```
+
+### TrustedBy
+`TrustedBy` simply maps trusts between domains. While useful, it leads to erroneous paths when assessing cross-domain privileges.
+
+Consider the next query and the resultant path:
+```
+MATCH p=shortestPath((:User {name: "WILLIAM_STEIN@AD.LOCAL"})-[*1..]->(:User {name: 'LOWPRIVS@AD2.LOCAL'})) RETURN p;
+```
+
+<img src="/assets/img/bh-contains-edge/trustedby-false-positive-path.png" />
+
+`WILLIAM_STEIN@AD.LOCAL` has `DCSync` privileges over the domain `AD.LOCAL`. Then, `AD2.LOCAL` trusts `AD.LOCAL` for authentication, and it `Contains` the user `LOWPRIVS@AD2.LOCAL`.
+
+The `DCSync` and `Contains` edges are accurate, but the trust mapping acts as if it awards privileges to push ACEs down the `AD2.LOCAL` domain object, which is absolutely not the case. A trust itself is not enough; `WILLIAM_STEIN@AD.LOCAL` would need to have been given privileges over `AD2.LOCAL` to successfully leverage this path.
+
+The easiest solution is to get rid of the `TrustedBy` edges:
+
+```
+MATCH ()-[r:TrustedBy]->() DELETE r;
+```
+
+If need be, you can reimport the `*_domains.json` file from your BloodHound dump to restore the trust relationships.
 
 ## Concluding
 While the proposed solution has negative aspects, it offers the peace of mind of knowing that the `Contains` edge will not introduce false positives. As I deem the fix imperfect, I will not be proposing it to the core of BloodHound, but recommend it to anyone assessing privileges at a large scale.
