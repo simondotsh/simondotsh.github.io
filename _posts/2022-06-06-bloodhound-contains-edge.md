@@ -124,7 +124,9 @@ Prior to version 4.2.0, a singular edge did not exist to identify a principal wi
 
 The same concept applies to the new edge `SyncLAPSPassword` (technical details available [here](https://simondotsh.com/infosec/2022/07/11/dirsync.html)) combining `GetChanges` and `GetChangesInFilteredSet`.
 
-For this reason, during my analysis, I delete the `GetChanges*` edges:
+For this reason, during my analysis, I delete the `GetChanges*` edges, but be aware that this has downsides. Consider the situation where a principal has `GetChanges`, but not `GetChangesAll`. If they have `GenericWrite` on a group that has the missing `GetChangesAll`, they could add themselves to the group and be able to perform the `DCSync`. If you delete these edges, you would end up missing this possibility.
+
+If this fits your use case, you can delete the potentially false positive-inducing edges like so:
 ```
 MATCH ()-[r:GetChanges]->() DELETE r;
 MATCH ()-[r:GetChangesAll]->() DELETE r;
