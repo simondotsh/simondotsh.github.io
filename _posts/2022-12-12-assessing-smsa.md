@@ -18,7 +18,7 @@ The problem lies in what the sMSA and gMSA can do on a domain. Microsoft specifi
   <figcaption>Source: <a href="https://learn.microsoft.com/en-us/azure/active-directory/fundamentals/service-accounts-standalone-managed#assess-the-security-posture-of-smsas">https://learn.microsoft.com/en-us/azure/active-directory/fundamentals/service-accounts-standalone-managed</a></figcaption>
 </figure>
 
-Why? Let us take the drastic example of an sMSA member of the `Domain Admins` group. This implies that anybody with control over the computer object where it is installed or with `SYSTEM` privileges on it could retrieve the credentials of the account, leading to compromising `Domain Admins` privileges.
+Why? Let us take the drastic example of an sMSA member of the `Domain Admins` group. This implies that anybody with control over the computer object where it is installed or with administrative privileges on it could retrieve the credentials of the account, leading to compromising `Domain Admins` privileges.
 
 The same issue applies to gMSA, but with a potentially higher exposure. Indeed, the [msDS-GroupMSAMembership](https://learn.microsoft.com/en-us/windows/win32/adschema/a-msds-groupmsamembership) attribute of a gMSA states the principals that can read its password. If any of these principals were to get compromised, the malicious actor would be awarded with the gMSA's privileges on the domain.
 
@@ -83,7 +83,7 @@ Apart from the highly privileged groups and the container stating where `WKS1` i
 ## Dumping sMSA Passwords
 After configuring an application to run as `smsa$`, `WKS1` needs a method to get the sMSA's password to authenticate on the domain.
 
-When an operator enters the credentials of a regular account to run in a service, scheduled task or IIS application pool, they are stored encrypted as [LSA secrets](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/hh994565(v%3dws.11)#lsa-secrets-on-the-hard-disk-drive) on the machine. These can be read by `SYSTEM` in the registry at `HKEY_LOCAL_MACHINE\SECURITY\Policy\Secrets`. This is exactly where an sMSA credentials are saved after installation.
+When an operator enters the credentials of a regular account to run in a service, scheduled task or IIS application pool, they are stored encrypted as [LSA secrets](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/hh994565(v%3dws.11)#lsa-secrets-on-the-hard-disk-drive) on the machine. These can be read by `SYSTEM` in the registry at `HKEY_LOCAL_MACHINE\SECURITY\Policy\Secrets`, or saved to a file by an administrator using `reg save`. This is exactly where an sMSA credentials are saved after installation.
 
 <img src="/assets/img/assessing-smsa/viewing-lsa-secrets.png" width="65%"/>
 
