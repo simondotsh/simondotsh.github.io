@@ -19,6 +19,12 @@ layout: default
     {% include toc.html html=content class="no-marg-bot" %}
   </div>
 
+  {%- if page.note -%}
+  <div class="note marg-top-25 no-marg-bot">
+    {% include note.html note=page.note %}
+  </div>
+  {%- endif -%}
+
   <div class="post-content e-content marg-top-25" itemprop="articleBody">
     {{ content }}
   </div>
