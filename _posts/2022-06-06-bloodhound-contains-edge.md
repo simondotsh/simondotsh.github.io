@@ -6,7 +6,6 @@ categories: infosec
 note: |
     **2022-11-06:** Updated to take into account changes made into BloodHound 4.2.0.
 ---
-
 As I continue my way through assessing Active Directory privileges without commercial software, I am constantly reminded how complex of a task it is. While determining the objects a single user can control is quite straight forward, finding all paths leading to the compromise of privileged principals can be tricky on a large domain. It is also apparent that in order to successfully do so, one must possess a strong understanding of the analyzed data, especially its weaknesses, or be at risk of reporting erroneous findings.
 
 This post is dedicated to presenting the root cause of real-world scenario where if I did not take a close look at the data, I would have documented twice too many users with a path to domain administration privileges. It also includes a proposed solution so that you can also avoid it.
