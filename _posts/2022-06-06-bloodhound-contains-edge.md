@@ -147,7 +147,9 @@ MATCH p=shortestPath((:User {name: "WILLIAM_STEIN@AD.LOCAL"})-[*1..]->(:User {na
 
 The `DCSync` and `Contains` edges are accurate, but the trust mapping acts as if it awards privileges to push ACEs down the `AD2.LOCAL` domain object, which is absolutely not the case. A trust itself is not enough; `WILLIAM_STEIN@AD.LOCAL` would need to have been given privileges over `AD2.LOCAL` to successfully leverage this path.
 
-The easiest solution is to get rid of the `TrustedBy` edges:
+Although, it is worth noting that this path could indeed exist in the case where the trust has SID history enabled, and that we have the required privileges to forge tickets in the source domain. This should be analyzed independently.
+
+The easiest solution to ensure no false positives result from `TrustedBy` is simply to get rid of the edges:
 
 ```
 MATCH ()-[r:TrustedBy]->() DELETE r;
