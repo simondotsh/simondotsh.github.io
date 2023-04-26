@@ -3,9 +3,6 @@ baseurl: "/"
 url: "https://simondotsh.com"
 twitter_username: simondotsh
 github_username:  simondotsh
-mastodon:
-- username: simondotsh
-  instance: infosec.exchange
 
 # Build settings
 theme: minima
