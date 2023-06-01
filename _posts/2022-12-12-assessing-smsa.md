@@ -3,6 +3,8 @@ layout: post
 title:  "Assessing Standalone Managed Service Accounts"
 date:   2022-12-12 00:00:00 -0500
 categories: infosec
+note: |
+   **2023-06-01:** This technique has been introduced into [BloodHound 4.3.1](https://posts.specterops.io/foss-bloodhound-4-3-1-release-7606f87786f6) as a new edge called [DumpSMSAPassword](https://bloodhound.readthedocs.io/en/latest/data-analysis/edges.html#dumpsmsapassword). See the pull request [here](https://github.com/BloodHoundAD/BloodHound/issues/624).
 ---
 Managed Service Accounts (MSA) offer an identity with automatic password management to run applications such as services. They come in two flavors: [Standalone Managed Service Accounts](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-service-accounts#standalone-managed-service-accounts) (sMSA) and [Group Managed Service Accounts](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-service-accounts#group-managed-service-accounts) (gMSA). The former can only be installed (used) on a single host, as opposed to the latter whose password can be retrieved by a multitude of configured principals, allowing usage on multiple hosts.
 
